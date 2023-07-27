@@ -218,6 +218,18 @@ select * from Product where not price between 3000 and 5000
 --33.Use the BETWEEN operator to select all the records where the value of the ProductName column is alphabetically between 'Geitost' and 'Pavlova'.
 select * from Product where pname between 'Laptop' and 'Mouse'
 
+-- create function which accept the price and discount 
+--calculate and return the price of each product and discounted price SQL server function
+create function GetProdDiscountByInt(@price int, @disc int)
+returns int
+as begin
+declare @disPrice int;
+set @disPrice = @price-(@price*@disc/100);
+return @disPrice
+end
+
+select dbo.GetProdDiscountByInt(price,10) as 'discount price', price, pname from Product
+
 select * from Product
 select * from Customers
 select * from Orderstatus

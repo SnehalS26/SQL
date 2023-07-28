@@ -183,6 +183,40 @@ select count(state) as 'total' from Customers
 --37.List the number of customers in each country, ordered by the country with the most customers first.
 select count(customerid), state from Customers group by state order by COUNT(customerid) desc
 
+-------------------------------------------------------------------------------------------------------
+--View---
+create view GetCustomerByOrderStatus
+as
+select c.customerid, c.customername , o.orderid , os.statusid ,os.statusname
+from Customers c inner join Orders o on c.customerid= o.customerid
+inner join Orderstatus os on os.statusid = o.statusid
+
+select * from GetCustomerByOrderStatus
+---------------------------------------------------------------------------------------
+--Stored Procedure---
+create proc SP_Customer(
+@customerid int , 
+@customername varchar(40),
+@age int,
+@city varchar(40),
+@state varchar(40),
+@dob date,
+@postalcode int
+)
+as begin
+insert into Customers values(@customerid,@customername, @age, @city, @state, @dob, @postalcode)
+end
+--call
+exec SP_Customer
+@customerid = 17,
+@customername = 'Akshata',
+@age = 22,
+@city = 'nashik',
+@state = 'Maharashtra',
+@dob = '1999-01-01',
+@postalcode = 422001
+-------------------------------------------------------------------------------------------------------------------
+
 
 create table Product 
 (
@@ -217,7 +251,8 @@ select * from Product where not price between 3000 and 5000
 
 --33.Use the BETWEEN operator to select all the records where the value of the ProductName column is alphabetically between 'Geitost' and 'Pavlova'.
 select * from Product where pname between 'Laptop' and 'Mouse'
-
+--------------------------------------------------------------------------------------------------------------
+--function-----
 -- create function which accept the price and discount 
 --calculate and return the price of each product and discounted price SQL server function
 create function GetProdDiscountByInt(@price int, @disc int)
@@ -229,7 +264,44 @@ return @disPrice
 end
 
 select dbo.GetProdDiscountByInt(price,10) as 'discount price', price, pname from Product
+-----------------------------------------------------------------------------------------------------------------------
 
+---Trigger-----
+
+create table Traceproduct
+(
+id int primary key identity(1,1),
+description varchar(200)
+)
+select * from Traceproduct
+--inserted
+create trigger tr_Product_Insert
+on Product after insert
+as begin
+declare @id int;
+declare @pname varchar(20);
+declare @price int;
+select @id=id,@pname=pname,@price=price from inserted
+insert into Traceproduct values('new recored add '+cast(@id as varchar)+' pname='+
+@pname+' price='+cast(@price as varchar)+' date ='+cast (GETDATE()as varchar))
+end
+
+insert into Product values(6,'Charger', 1600)
+-----------------------------------------------
+--deleted
+create trigger tr_Product_Delete
+on Product after delete
+as begin
+declare @id int;
+declare @pname varchar(20);
+declare @price int;
+select @id=id,@pname=pname,@price=price from deleted
+insert into Traceproduct values('recored delete '+cast(@id as varchar)+' pname='+
+@pname+' price='+cast(@price as varchar)+' date ='+cast (GETDATE()as varchar))
+end
+
+delete from Product where id = 6
+------------------------------------------------------------------------------------------
 select * from Product
 select * from Customers
 select * from Orderstatus
